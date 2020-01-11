@@ -7,8 +7,10 @@ describe('block', () => {
     const lastHash = 'test-lastHash'
     const hash = 'test-hash'
     const data = 'test-data'
+    const nonce = 1
+    const difficulty = 1
 
-    const block = new Block({timestamp, lastHash, hash, data})
+    const block = new Block({timestamp, nonce, difficulty, lastHash, hash, data})
 
     it('hasEverything', () => {
         expect(block.timestamp).toEqual(timestamp)
@@ -51,8 +53,12 @@ describe('block', () => {
             expect(minedBlock.timestamp).not.toEqual(undefined)
         })
 
+        it('minedBlocks sets a timestamp', () => {
+            expect(minedBlock.hash.substring(0, minedBlock.difficulty)).toEqual('0'.repeat(minedBlock.difficulty))
+        })
+
         it('creates SHA 256 for an input', () => {
-            expect(minedBlock.hash).toEqual(cryptoHash(minedBlock.timestamp, lastBlock.hash, data))
+            expect(minedBlock.hash).toEqual(cryptoHash(minedBlock.timestamp, minedBlock.nonce, minedBlock.difficulty, lastBlock.hash, data))
         })
     })
     

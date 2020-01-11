@@ -100,9 +100,14 @@ describe('blockchain', () => {
             })
             })
             describe('and the chain is valid', () => {
-                it('replace the chain', () => {
+                beforeEach(() => {
                     blockchain.replaceChain(newChain.chain)
+                })
+              it('replace the chain', () => {
                     expect(blockchain.chain).toEqual(newChain.chain)
+                })
+                it('logs success for replacing chain', () => {
+                    expect(logMock).toHaveBeenCalled()
                 })
             })
         })
