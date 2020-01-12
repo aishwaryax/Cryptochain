@@ -1,5 +1,5 @@
 const PubNub = require('pubnub')
-const blockchain = require('./blockchain')
+const blockchain = require('../blockchain')
 
 const credentials = {
     publishKey: 'pub-c-35d7425e-f3bb-4461-b3de-7d480574318f',
