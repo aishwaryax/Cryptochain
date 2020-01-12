@@ -4,6 +4,7 @@
     "description": "",
     "main": "block.js",
     "dependencies": {
+        "hex-to-binary": "^1.0.1",
         "jest": "^24.9.0"
     },
     "devDependencies": {},
