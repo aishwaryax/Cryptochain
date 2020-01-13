@@ -9,12 +9,14 @@ const credentials = {
 
 const CHANNELS = {
     TEST: 'TEST',
-    BLOCKCHAIN: 'BLOCKCHAIN'
+    BLOCKCHAIN: 'BLOCKCHAIN',
+    TRANSACTION: 'TRANSACTION'
 }
 
 class PubSub {
-    constructor ({blockchain}) {
+    constructor ({blockchain, transactionPool}) {
         this.blockchain = blockchain
+        this.transactionPool = transactionPool
         this.pubnub = new PubNub(credentials)
         this.pubnub.subscribe({channels: Object.values(CHANNELS)})
         this.pubnub.addListener(this.listener())
@@ -23,11 +25,27 @@ class PubSub {
     listener() {
         return {
             message: messageObject => {
-                const {channel, message} = messageObject
-                console.log(`message received! message: ${message} channel: ${channel}`)
-                const parsedMessage = JSON.parse(message)
-                if (channel === CHANNELS.BLOCKCHAIN) {
-                    this.blockchain.replaceChain(parsedMessage)
+            const { channel, message } = messageObject;
+
+            console.log(`Message received. Channel: ${channel}. Message: ${message}`);
+            const parsedMessage = JSON.parse(message);
+
+            switch(channel) {
+                case CHANNELS.BLOCKCHAIN:
+                    this.blockchain.replaceChain(parsedMessage, true, () => {
+                    this.transactionPool.clearBlockchainTransactions({ 
+                        chain: parsedMessage.chain 
+                        })
+                    })
+                break
+                case CHANNELS.BLOCKCHAIN:
+                    this.blockchain.replaceChain(parsedMessage, true, () => {
+                    this.transactionPool.clearBlockchainTransactions(
+                        { chain: parsedMessage.chain })
+                    })
+                break
+                default:
+                    return;
                 }
             }
         }
@@ -41,6 +59,13 @@ class PubSub {
     this.publish({
       channel: CHANNELS.BLOCKCHAIN,
       message: JSON.stringify(this.blockchain.chain)
+    });
+  }
+
+    broadcastTransaction(transaction) {
+    this.publish({
+      channel: CHANNELS.TRANSACTION,
+      message: JSON.stringify(transaction)
     });
   }
 }
