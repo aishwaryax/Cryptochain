@@ -9,6 +9,7 @@
         "express": "^4.17.1",
         "hex-to-binary": "^1.0.1",
         "jest": "^24.9.0",
+        "mongodb": "^3.5.0",
         "pubnub": "^4.27.3",
         "pubsub": "^3.2.1",
         "redis": "^2.8.0",

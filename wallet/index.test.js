@@ -1,6 +1,8 @@
 const Wallet = require('./index')
 const { verifySignature } = require('../util')
 const Transaction = require('./transaction')
+const Blockchain = require('../blockchain')
+const {STARTING_BALANCE} = require('../config')
 
 describe('Wallet', () => {
     let wallet;
@@ -57,6 +59,80 @@ describe('Wallet', () => {
             })
             it('outputs the amount to the recipient', () => {
                 expect(transaction.outputMap[recipient]).toEqual(amount)
+            })
+        })
+
+        describe('and chain is passed', () => {
+            it('and calculate wallet balance is called', () => {
+                const calclateBalanceMock = jest.fn()
+                originalCalculateBalance = Wallet.calculateBalance
+                Wallet.calculateBalance = calclateBalanceMock
+                wallet.createTransaction({recipient: 'foo', amount: 50, chain: new Blockchain().chain})
+                expect(calclateBalanceMock).toHaveBeenCalled()
+                Wallet.calculateBalance = originalCalculateBalance
+            })
+        })
+    })
+
+    describe('calculateBalance', () => {
+        let blockchain
+        beforeEach(() => {
+            blockchain = new Blockchain()
+        })
+        describe('and there are no output transactions for the wallet', () => {
+            it('returns the STARTING_BALANCE', () => {
+                expect(Wallet.calculateBalance({chain: blockchain.chain, address: wallet.publicKey})).toEqual(STARTING_BALANCE)
+            })
+        })
+
+        describe('and there are output transactions for the wallet', () => {
+            let transactionOne, transactionTwo
+            beforeEach(() => {
+                transactionOne = new Wallet().createTransaction({recipient: wallet.publicKey, amount: 50})
+                transactionTwo = new Wallet().createTransaction({recipient: wallet.publicKey, amount: 45})
+                blockchain.addBlock({data: [transactionOne, transactionTwo]})
+            })
+            it('adds the sum of all output transactions to the wallet', () => {
+                 expect(Wallet.calculateBalance({chain: blockchain.chain, address: wallet.publicKey})).toEqual(STARTING_BALANCE + transactionOne.outputMap[wallet.publicKey] + transactionTwo.outputMap[wallet.publicKey])
+            })
+        })
+
+        describe('and wallet has made a transaction', () => {
+            let recentTransaction
+            beforeEach(() => {
+                recentTransaction = wallet.createTransaction({
+                    recipient: 'foo-rec',
+                    amount: 50
+                })
+
+                blockchain.addBlock({data:[recentTransaction]})
+            })
+            it('returns output amount of recent transaction', () => {
+                expect(Wallet.calculateBalance({chain: blockchain.chain, address: wallet.publicKey})).toEqual(recentTransaction.outputMap[wallet.publicKey])
+            })
+
+            describe('and there are outputs next to and after the recentTransaction', () => {
+                let sameBlockTransaction, nextBlockTransaction
+                beforeEach(() => {                    
+
+                    recentTransaction = wallet.createTransaction({recipient: 'rec1', amount: 60})
+                    sameBlockTransaction = Transaction.rewardTransaction({minerWallet: wallet})
+                    blockchain.addBlock({data: [recentTransaction, sameBlockTransaction]})
+
+                    nextBlockTransaction = new Wallet().createTransaction({recipient: wallet.publicKey, amount: 100})
+                    blockchain.addBlock({data: [nextBlockTransaction]})
+                })
+
+                
+
+                it('includes the output amounts in the wallet balance', () => {
+                    expect(Wallet.calculateBalance({chain: blockchain.chain, address: wallet.publicKey}))
+                    .toEqual(
+                        recentTransaction.outputMap[wallet.publicKey] + 
+                        sameBlockTransaction.outputMap[wallet.publicKey] +
+                        nextBlockTransaction.outputMap[wallet.publicKey]
+                    )
+                })
             })
         })
     })
