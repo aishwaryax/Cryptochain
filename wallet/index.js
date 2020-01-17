@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs')
 const { STARTING_BALANCE } = require('../config')
 const { ec, cryptoHash } = require('../util')
 const Transaction = require('./transaction')
@@ -8,8 +9,12 @@ class Wallet {
         this.keyPair = ec.genKeyPair()
 
         this.publicKey = this.keyPair.getPublic().encode('hex')
+        this.privateKey = bcrypt.hash(this.publicKey, 10)
+        .then((key)=>{
+            console.log("private", key)
+        })
+        
 
-        //getPrivate ??
     }
 
     sign(data) {
