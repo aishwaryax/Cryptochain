@@ -20,8 +20,8 @@ const app = express();
 const blockchain = new Blockchain();
 const transactionPool = new TransactionPool();
 const wallet = new Wallet();
-const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
-// const pubsub = new PubSub({ blockchain, transactionPool, wallet }); // for PubNub
+//const pubsub = new PubSub({ blockchain, transactionPool, redisUrl: REDIS_URL });
+const pubsub = new PubSub({ blockchain, transactionPool, wallet }); // for PubNub
 const transactionMiner = new TransactionMiner({ blockchain, transactionPool, wallet, pubsub });
 
 app.use(bodyParser.json());
@@ -87,7 +87,7 @@ app.post('/api/transact', (req, res) => {
   res.json({ type: 'success', transaction });
 });
 
-app.get('/api/transaction-pool-map', (req, res) => {
+app.get('/api/transaction-pool', (req, res) => {
   res.json(transactionPool.transactionMap);
 });
 

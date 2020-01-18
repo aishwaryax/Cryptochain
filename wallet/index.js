@@ -10,11 +10,6 @@ class Wallet {
 
         this.publicKey = this.keyPair.getPublic().encode('hex')
         this.privateKey = bcrypt.hash(this.publicKey, 10)
-        .then((key)=>{
-            console.log("private", key)
-        })
-        
-
     }
 
     sign(data) {
