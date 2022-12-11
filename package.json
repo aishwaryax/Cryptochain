@@ -13,7 +13,7 @@
         "body-parser": "^1.19.0",
         "components": "^0.1.0",
         "elliptic": "^6.5.2",
-        "express": "^4.17.1",
+        "express": "^4.17.3",
         "hex-to-binary": "^1.0.1",
         "history": "^4.10.1",
         "jest": "^24.9.0",
